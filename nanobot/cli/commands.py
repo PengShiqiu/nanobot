@@ -377,6 +377,15 @@ def channels_status():
         tg_config
     )
 
+    # Feishu
+    fs = config.channels.feishu
+    fs_config = f"app_id: {fs.app_id}" if fs.app_id else "[dim]not configured[/dim]"
+    table.add_row(
+        "Feishu",
+        "✓" if fs.enabled else "✗",
+        fs_config
+    )
+
     console.print(table)
 
 
