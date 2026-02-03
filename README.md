@@ -75,6 +75,19 @@ pip install -e .
 uv tool install nanobot-ai
 ```
 
+**Develop with [uv](https://github.com/astral-sh/uv)** (recommended for development)
+
+```bash
+git clone https://github.com/HKUDS/nanobot.git
+cd nanobot
+# 安装项目及其依赖（可编辑模式）
+uv pip install -e .
+
+# 或者使用 uv 直接运行命令（无需安装）
+uv run nanobot onboard
+uv run nanobot agent -m "Hello!"
+```
+
 **Install from PyPI** (stable)
 
 ```bash

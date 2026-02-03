@@ -32,14 +32,22 @@ class LiteLLMProvider(LLMProvider):
             (api_base and "openrouter" in api_base)
         )
         
+        # Detect if using Zhipu's Anthropic-compatible API
+        self.is_zhipu_anthropic = (
+            api_base and "bigmodel.cn" in api_base and "anthropic" in default_model
+        )
+
         # Track if using custom endpoint (vLLM, etc.)
-        self.is_vllm = bool(api_base) and not self.is_openrouter
-        
+        self.is_vllm = bool(api_base) and not self.is_openrouter and not self.is_zhipu_anthropic
+
         # Configure LiteLLM based on provider
         if api_key:
             if self.is_openrouter:
                 # OpenRouter mode - set key
                 os.environ["OPENROUTER_API_KEY"] = api_key
+            elif self.is_zhipu_anthropic:
+                # Zhipu's Anthropic-compatible API
+                os.environ["ANTHROPIC_API_KEY"] = api_key
             elif self.is_vllm:
                 # vLLM/custom endpoint - uses OpenAI-compatible API
                 os.environ["OPENAI_API_KEY"] = api_key
@@ -53,9 +61,14 @@ class LiteLLMProvider(LLMProvider):
                 os.environ.setdefault("ZHIPUAI_API_KEY", api_key)
             elif "groq" in default_model:
                 os.environ.setdefault("GROQ_API_KEY", api_key)
-        
+
+        # Set API base for Anthropic-compatible endpoints (like Zhipu)
         if api_base:
-            litellm.api_base = api_base
+            if "anthropic" in default_model or self.is_zhipu_anthropic:
+                # For Anthropic-compatible APIs, set the base URL
+                os.environ["ANTHROPIC_API_BASE"] = api_base
+            else:
+                litellm.api_base = api_base
         
         # Disable LiteLLM logging noise
         litellm.suppress_debug_info = True
@@ -111,10 +124,14 @@ class LiteLLMProvider(LLMProvider):
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
-        
-        # Pass api_base directly for custom endpoints (vLLM, etc.)
+
+        # Pass api_base directly for custom endpoints
+        # For Anthropic-compatible APIs, use base_url; for others use api_base
         if self.api_base:
-            kwargs["api_base"] = self.api_base
+            if self.is_zhipu_anthropic or ("anthropic" in model and not self.is_openrouter):
+                kwargs["base_url"] = self.api_base
+            else:
+                kwargs["api_base"] = self.api_base
         
         if tools:
             kwargs["tools"] = tools

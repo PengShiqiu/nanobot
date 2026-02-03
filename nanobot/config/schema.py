@@ -105,9 +105,11 @@ class Config(BaseSettings):
         )
     
     def get_api_base(self) -> str | None:
-        """Get API base URL if using OpenRouter, Zhipu or vLLM."""
+        """Get API base URL if using OpenRouter, Anthropic, Zhipu or vLLM."""
         if self.providers.openrouter.api_key:
             return self.providers.openrouter.api_base or "https://openrouter.ai/api/v1"
+        if self.providers.anthropic.api_base:
+            return self.providers.anthropic.api_base
         if self.providers.zhipu.api_key:
             return self.providers.zhipu.api_base
         if self.providers.vllm.api_base:
