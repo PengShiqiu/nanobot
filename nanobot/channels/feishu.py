@@ -336,7 +336,7 @@ class FeishuChannel(BaseChannel):
 
         while self._running:
             try:
-                logger.debug("[Feishu] Waiting for event from queue...")
+                # logger.debug("[Feishu] Waiting for event from queue...")
                 event = await asyncio.wait_for(
                     self._event_queue.get(),
                     timeout=1.0
